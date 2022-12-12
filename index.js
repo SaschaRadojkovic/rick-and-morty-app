@@ -13,15 +13,24 @@ const nextButton = document.querySelector('[data-js="button-next"]');
 const pagination = document.querySelector('[data-js="pagination"]');
 
 // States
-const maxPage = 1;
-const page = 1;
+const maxPage = 42;
+let page = 1;
 const searchQuery = "";
 
 async function fetchCharacters() {
   try {
-    const response = await fetch("https://rickandmortyapi.com/api/character/?page=2");
+    cardContainer.innerHTML = "";
+    const response = await fetch(
+      `https://rickandmortyapi.com/api/character/?page=${page}`
+    );
     const data = await response.json();
     const allCharacters = data.results;
+
+    allCharacters.forEach((character) => {
+      const newCard = createCharacterCard(character);
+
+      cardContainer.append(newCard);
+    });
     if (response.ok) {
       console.log(allCharacters);
       allCharacters.forEach((character) => {
@@ -34,35 +43,23 @@ async function fetchCharacters() {
   } catch (error) {
     console.log(error);
   }
-
-  /*
-  const response = await fetch(
-    "https://rickandmortyapi.com/api/character/?page=2"
-  );
-  const data = await response.json();
-
-  data.results.forEach((character) => {
-    const card = document.createElement("div");
-    card.classList.add("card");
-
-    const name = document.createElement("h2");
-    name.textContent = character.name;
-
-    const image = document.createElement("img");
-    image.src = character.image;
-    image.setAttribute("alt", character.name);
-
-    const info = document.createElement("dl");
-    info.textContent = card.appendChild(name);
-    card.appendChild(image);
-
-    cardContainer.appendChild(card);
-  });
-  */
 }
+nextButton.addEventListener("click", () => {
+  page++;
+  fetchCharacters();
+});
+prevButton.addEventListener("click", () => {
+  if (page !== 1) {
+    page--;
+  }
+
+  fetchCharacters();
+});
 
 console.log(fetchCharacters());
 
 const newCard = createCharacterCard();
 cardContainer.append(newCard);
+document.body.appendChild(cardContainer);
+
 // document.body.append(newCard);
