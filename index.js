@@ -1,5 +1,5 @@
 console.clear();
-
+import { fetchPage } from "./components/api.js";
 import { createCharacterCard } from "./components/card/card.js";
 
 const cardContainer = document.querySelector('[data-js="card-container"]');
@@ -11,58 +11,55 @@ const navigation = document.querySelector('[data-js="navigation"]');
 const prevButton = document.querySelector('[data-js="button-prev"]');
 const nextButton = document.querySelector('[data-js="button-next"]');
 const pagination = document.querySelector('[data-js="pagination"]');
-
+const searchInput = document.querySelector('[data-js="search-input"]');
 // States
-const maxPage = 1;
-const page = 1;
-const searchQuery = "";
+let maxPage = 42;
+let page = 1;
+let searchQuery = "";
+
+searchInput.addEventListener("input", () => {
+  searchQuery = searchInput.value;
+  console.log(searchQuery);
+  page = 1;
+  fetchCharacters();
+});
 
 async function fetchCharacters() {
   try {
-    const response = await fetch("https://rickandmortyapi.com/api/character/?page=2");
-    const data = await response.json();
+    cardContainer.innerHTML = "";
+    const { data, response } = await fetchPage(page, searchQuery);
     const allCharacters = data.results;
+
+    maxPage = data.info.pages;
+    pagination.textContent = `${page} / ${maxPage}`;
+    allCharacters.forEach((character) => {
+      const newCard = createCharacterCard(character);
+      cardContainer.append(newCard);
+    });
     if (response.ok) {
-      console.log(allCharacters);
+      // console.log(allCharacters);
       allCharacters.forEach((character) => {
         const newCard = createCharacterCard(character);
         cardContainer.append(newCard);
       });
     } else {
-      console.log("An error ocurred");
+      console.log("An error occurred");
     }
   } catch (error) {
     console.log(error);
   }
-
-  /*
-  const response = await fetch(
-    "https://rickandmortyapi.com/api/character/?page=2"
-  );
-  const data = await response.json();
-
-  data.results.forEach((character) => {
-    const card = document.createElement("div");
-    card.classList.add("card");
-
-    const name = document.createElement("h2");
-    name.textContent = character.name;
-
-    const image = document.createElement("img");
-    image.src = character.image;
-    image.setAttribute("alt", character.name);
-
-    const info = document.createElement("dl");
-    info.textContent = card.appendChild(name);
-    card.appendChild(image);
-
-    cardContainer.appendChild(card);
-  });
-  */
 }
+nextButton.addEventListener("click", () => {
+  page++;
 
-console.log(fetchCharacters());
+  fetchCharacters();
+});
+prevButton.addEventListener("click", () => {
+  if (page !== 1) {
+    page--;
+  }
 
-const newCard = createCharacterCard();
-cardContainer.append(newCard);
-// document.body.append(newCard);
+  fetchCharacters();
+});
+
+fetchCharacters();
