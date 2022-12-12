@@ -1,5 +1,5 @@
 console.clear();
-
+import { fetchPage } from "./components/api.js";
 import { createCharacterCard } from "./components/card/card.js";
 
 const cardContainer = document.querySelector('[data-js="card-container"]');
@@ -11,34 +11,39 @@ const navigation = document.querySelector('[data-js="navigation"]');
 const prevButton = document.querySelector('[data-js="button-prev"]');
 const nextButton = document.querySelector('[data-js="button-next"]');
 const pagination = document.querySelector('[data-js="pagination"]');
-
+const searchInput = document.querySelector('[data-js="search-input"]');
 // States
-const maxPage = 42;
+let maxPage = 42;
 let page = 1;
-const searchQuery = "";
+let searchQuery = "";
+
+searchInput.addEventListener("input", () => {
+  searchQuery = searchInput.value;
+  console.log(searchQuery);
+  page = 1;
+  fetchCharacters();
+});
 
 async function fetchCharacters() {
   try {
     cardContainer.innerHTML = "";
-    const response = await fetch(
-      `https://rickandmortyapi.com/api/character/?page=${page}`
-    );
-    const data = await response.json();
+    const { data, response } = await fetchPage(page, searchQuery);
     const allCharacters = data.results;
 
+    maxPage = data.info.pages;
+    pagination.textContent = `${page} / ${maxPage}`;
     allCharacters.forEach((character) => {
       const newCard = createCharacterCard(character);
-
       cardContainer.append(newCard);
     });
     if (response.ok) {
-      console.log(allCharacters);
+      // console.log(allCharacters);
       allCharacters.forEach((character) => {
         const newCard = createCharacterCard(character);
         cardContainer.append(newCard);
       });
     } else {
-      console.log("An error ocurred");
+      console.log("An error occurred");
     }
   } catch (error) {
     console.log(error);
@@ -46,6 +51,7 @@ async function fetchCharacters() {
 }
 nextButton.addEventListener("click", () => {
   page++;
+
   fetchCharacters();
 });
 prevButton.addEventListener("click", () => {
@@ -56,10 +62,4 @@ prevButton.addEventListener("click", () => {
   fetchCharacters();
 });
 
-console.log(fetchCharacters());
-
-const newCard = createCharacterCard();
-cardContainer.append(newCard);
-document.body.appendChild(cardContainer);
-
-// document.body.append(newCard);
+fetchCharacters();
