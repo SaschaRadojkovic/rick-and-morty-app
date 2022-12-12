@@ -17,6 +17,33 @@ const maxPage = 1;
 const page = 1;
 const searchQuery = "";
 
+async function fetchCharacters() {
+  const response = await fetch(
+    "https://rickandmortyapi.com/api/character/?page=2"
+  );
+  const data = await response.json();
+
+  data.results.forEach((character) => {
+    const card = document.createElement("div");
+    card.classList.add("card");
+
+    const name = document.createElement("h2");
+    name.textContent = character.name;
+
+    const image = document.createElement("img");
+    image.src = character.image;
+    image.setAttribute("alt", character.name);
+
+    const info = document.createElement("dl");
+    info.textContent = card.appendChild(name);
+    card.appendChild(image);
+
+    cardContainer.appendChild(card);
+  });
+}
+
+console.log(fetchCharacters());
+
 const newCard = createCharacterCard();
 cardContainer.append(newCard);
 // document.body.append(newCard);
